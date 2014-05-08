@@ -7,7 +7,6 @@ function ilt_auth_help($path, $args){
 	}
 }
 
-
 function ilt_auth_block_info(){
 	$blocks['ilt_auth'] = array(
 		// The name that will appear in the block list.
@@ -17,7 +16,6 @@ function ilt_auth_block_info(){
 	);
 	return $blocks;
 }
-
 
 function ilt_auth_form($form, &$form_state){
 	$form['ilt_auth_key'] = array(
@@ -60,5 +58,8 @@ function ilt_auth_form($form, &$form_state){
 	return system_settings_form($form);
 }
 
+function ilt_auth_contents(){
+	$
+}
 
 
