@@ -1,0 +1,4 @@
+name = "Ilt OAuth module"
+description = "A module which can let user login with ilt system."
+core = "7.x"
+configure = admin/config/ilt_auth

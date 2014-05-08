@@ -1,0 +1,64 @@
+<?php 
+
+// Help in the module enable page.
+function ilt_auth_help($path, $args){
+	if ($path == 'admin/help#ilt_auth'){
+		return t('To use this module, you need to get keys from ilt developer\'s system.');
+	}
+}
+
+
+function ilt_auth_block_info(){
+	$blocks['ilt_auth'] = array(
+		// The name that will appear in the block list.
+		'info' => t('Ilt Authorizations'),
+		// Default setting.
+		'cache' => DRUPAL_CACHE_PER_ROLE
+	);
+	return $blocks;
+}
+
+
+function ilt_auth_form($form, &$form_state){
+	$form['ilt_auth_key'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Ilt API key'),
+		'#default_value' => variable_get('ilt_auth_key', '1d312968ec4ccf984f5d2ebaad82aef7053357021'),
+		'#size' => 50,
+		'#maxlength' => 50,
+		'#description' => t('The ilt api who will give you a key to connect.'),
+		'#required' => TRUE,
+	);
+	$form['ilt_auth_secret'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Ilt API secret'),
+		'#default_value' => variable_get('ilt_auth_secret', '4b6b021cd87b6dfce637518f3c6d4078'),
+		'#size' => 40,
+		'#maxlength' => 40,
+		'#description' => t('If ilt system give back a token to you, you need to give key, secret, token back to get user data.'),
+		'#required' => TRUE,
+	);
+	$form['ilt_auth_host_url'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Ilt URL'),
+		'#default_value' => variable_get('ilt_auth_host_url', 'http://ilt.nchusg.org'),
+		'#size' => 128,
+		'#maxlength' => 128,
+		'#description' => t('Ilt system\'s url.'),
+		'#required' => TRUE,
+	);
+	$form['ilt_auth_scope'] = array(
+		'#type' => 'text_field',
+		'#title' => t('ilt Data Scope'),
+		'#default_value' => variable_get('ilt_auth,scope', 'user.login.basic+user.login.student+user.info.basic+user.info.student+user.info.personal'),
+		'#size' => 512,
+		'#maxlength' => 512,
+		'#description' => t('Ilt data you want to get.'),
+		'#required' => TRUE,
+	);
+
+	return system_settings_form($form);
+}
+
+
+
