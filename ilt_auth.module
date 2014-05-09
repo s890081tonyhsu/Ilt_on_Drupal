@@ -3,12 +3,19 @@
 function ilt_auth_menu() {
   $items = array();
   $items['admin/config/ilt_auth'] = array(
-    'title' => 'Ilt Authorization Settings',
+	'title' => 'Ilt Authorization Settings',
     'description' => 'Configuration for Ilt Auth module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ilt_auth_form'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
+  );
+  $items['ilt_auth'] = array(
+	'title' => 'Ilt Authorization Interface',
+	'description' => 'Use ilt authorization to login',
+	'page callback' => 'ilt_auth_run',
+	'access arguments' => array('access all views'),
+	'type' => MENU_NORMAL_ITEM,
   );
   return $items;
 }
