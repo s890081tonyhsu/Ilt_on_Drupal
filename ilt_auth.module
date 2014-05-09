@@ -1,5 +1,18 @@
 <?php 
 
+function ilt_auth_menu() {
+  $items = array();
+  $items['admin/config/ilt_auth'] = array(
+    'title' => 'Ilt Authorization Settings',
+    'description' => 'Configuration for Ilt Auth module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ilt_auth_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
 // Help in the module enable page.
 function ilt_auth_help($path, $args){
 	if ($path == 'admin/help#ilt_auth'){
@@ -39,17 +52,17 @@ function ilt_auth_form($form, &$form_state){
 	$form['ilt_auth_host_url'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Ilt URL'),
-		'#default_value' => variable_get('ilt_auth_host_url', 'http://ilt.nchusg.org'),
-		'#size' => 128,
+		'#default_value' => variable_get('ilt_auth_host_url', 'http://ilt.nchusg.org/oauth'),
+		'#size' => 64,
 		'#maxlength' => 128,
 		'#description' => t('Ilt system\'s url.'),
 		'#required' => TRUE,
 	);
 	$form['ilt_auth_scope'] = array(
-		'#type' => 'text_field',
+		'#type' => 'textfield',
 		'#title' => t('ilt Data Scope'),
 		'#default_value' => variable_get('ilt_auth,scope', 'user.login.basic+user.login.student+user.info.basic+user.info.student+user.info.personal'),
-		'#size' => 512,
+		'#size' => 64,
 		'#maxlength' => 512,
 		'#description' => t('Ilt data you want to get.'),
 		'#required' => TRUE,
@@ -58,8 +71,61 @@ function ilt_auth_form($form, &$form_state){
 	return system_settings_form($form);
 }
 
-function ilt_auth_contents(){
-	$
+function ilt_auth_login_register($name, $email, $module){
+	$account = user_external_load($name);
+	if (!$account){
+		//Register
+		$userinfo = array(
+			'name' => $name,
+			'pass' => user_password(),
+			'mail' => $email,
+			'init' => $email,
+			'status' => 1,
+			'access' => REQUEST_TIME,
+		);
+		$account = user_save(drupal_anoymous_user(),$userinfo);
+		// Saving user data by changing anoymous_user just created.
+		if(!$account){
+			drupal_set_message(t('Error saving user account.'),'error');
+			return;
+		}
+		user_set_authmaps($account, array('authname_$module' => $name, 'authmail_$module' => $email));
+	}
+
+	$form_state['uid'] = $account->uid;
+	user_login_submit(arrat(), $form_state);
 }
 
+function ilt_auth_run(){
+	$params = Array();
+	$params = array(
+		'key' => variable_get('ilt_auth_key', '1d312968ec4ccf984f5d2ebaad82aef7053357021'),
+		'secret' => variable_get('ilt_auth_secret', '4b6b021cd87b6dfce637518f3c6d4078'),
+		'host_url' => variable_get('ilt_auth_host_url', 'http://ilt.nchusg.org/oauth'),
+		'scope' => variable_get('ilt_auth,scope', 'user.login.basic+user.login.student+user.info.basic+user.info.student+user.info.personal'),
+		'token' => '',
+		'auth_server' => $params['host_url'].'/auth_server',
+		'access_token' => $params['host_url'].'/resource_server',
+		'request_token' => $params['host_url'].'/resource_owner'
+	);
 
+	if ( true == (isset($_GET['token']) && !empty($_GET['token'])) ) {
+ 		$params['token'] = $_GET['token'];
+		$res_url    = $params['access_token'].
+				'?token='.$params['token'].
+				'&client_key='.$params['key'].
+				'&client_secret='.$params['secret'];
+
+		$data_json  = file_get_contents($res_url);
+		$data_arr   = json_decode($data_json);
+		ilt_auth_login_register($data_arr['info']['username'], $data_arr['info']['email'], 'ilt_auth');
+	}else{
+		$uri =  $params['auth_server'].
+			'?client_key='.$params['key'].
+			'&redirect_uri='.urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).
+			'&scope='.$params['scope'];
+
+		header('Location:'.$uri) or exit('Client redirect failed!');
+		exit("redirect to ilt auth system...");
+	}
+}
